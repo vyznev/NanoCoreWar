@@ -6,35 +6,33 @@ import java.security.MessageDigest;
 /**
  * This contains the compiled code for each warror and a method for adding a line with three arguments.
  * 
- * @author PhiNotPi
- * @version 3/08/15
+ * @author PhiNotPi, Ilmari Karonen
+ * @version 3/17/15
  */
 public class Player
 {
     private String name, hash;
-    private ArrayList<int []> codeList;
-    
+    private ArrayList<Instruction> codeList;
+        
     public Player(String name)
     {
         this.name = name;
-        codeList = new ArrayList<int []>();
+        codeList = new ArrayList<Instruction>();
     }
     
     public void addLine(String opcode, String fieldA, String fieldB)
     {
-        int[] command = new int[5];
-        command[0] = Parser.opEncode(opcode.trim().toUpperCase());
-        int modeA = 1;
+        int modeA = Instruction.MODE_DIR;
         int valA = 0;
         fieldA = fieldA.trim();
         if(fieldA.charAt(0) == '#')
         {
-            modeA = 0;
+            modeA = Instruction.MODE_IMM;
             fieldA = fieldA.substring(1);
         }
         else if(fieldA.charAt(0) == '@')
         {
-            modeA = 2;
+            modeA = Instruction.MODE_IND;
             fieldA = fieldA.substring(1);
         }
         try
@@ -45,17 +43,17 @@ public class Player
         {
             System.out.println("Player " + name + " had a problem at line " + codeList.size() + ", field A.");
         }
-        int modeB = 1;
+        int modeB = Instruction.MODE_DIR;
         int valB = 0;
         fieldB = fieldB.trim();
         if(fieldB.charAt(0) == '#')
         {
-            modeB = 0;
+            modeB = Instruction.MODE_IMM;
             fieldB = fieldB.substring(1);
         }
         else if(fieldB.charAt(0) == '@')
         {
-            modeB = 2;
+            modeB = Instruction.MODE_IND;
             fieldB = fieldB.substring(1);
         }
         try
@@ -66,14 +64,12 @@ public class Player
         {
             System.out.println("Player " + name + " had a problem at line " + codeList.size() + ", field B");
         }
-        command[1] = modeA;
-        command[2] = modeB;
-        command[3] = valA;
-        command[4] = valB;
+        int op = Parser.opEncode(opcode.trim().toUpperCase());
+        Instruction command = new Instruction(op, modeA, modeB, valA, valB);
         codeList.add(command);
         hash = null;  // invalidate old hash
     }
-    public ArrayList<int[]> getCode()
+    public ArrayList<Instruction> getCode()
     {
         return codeList;
     }
@@ -83,31 +79,33 @@ public class Player
     }
     public String getUniqueHash()
     {
-	if (hash != null) return hash;
-	try {
-	    MessageDigest md = MessageDigest.getInstance("SHA-1");
-	    for (int [] command : codeList)
-	    {
-		ByteBuffer byteBuf = ByteBuffer.allocate(5 * 4);
-		IntBuffer intBuf = byteBuf.asIntBuffer();
-		intBuf.put(command);
-		md.update(byteBuf.array());
-	    }
-	    byte[] digest = md.digest();
-	    
-	    char[] hexDigest = new char[digest.length * 2];
-	    char[] hexChars = "0123456789abcdef".toCharArray();
-	    for(int i = 0; i < digest.length; i++)
-	    {
-		hexDigest[2*i] = hexChars[(digest[i] >> 4) & 0xF];
-		hexDigest[2*i+1] = hexChars[digest[i] & 0xF];
-	    }
-	    hash = new String(hexDigest);
-	    return hash;
-	}
-	catch (java.security.NoSuchAlgorithmException e)
-	{
-	    return null;  // should never happen
-	}
+        if (hash != null) return hash;
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+	        for (Instruction command : codeList)
+	        {
+                ByteBuffer byteBuf = ByteBuffer.allocate(3 * 4);
+                IntBuffer intBuf = byteBuf.asIntBuffer();
+                intBuf.put(command.packedOp);
+                intBuf.put(command.field1);
+                intBuf.put(command.field2);
+                md.update(byteBuf.array());
+            }
+            byte[] digest = md.digest();
+        
+       	    char[] hexDigest = new char[digest.length * 2];
+            char[] hexChars = "0123456789abcdef".toCharArray();
+            for(int i = 0; i < digest.length; i++)
+            {
+                hexDigest[2*i] = hexChars[(digest[i] >> 4) & 0xF];
+                hexDigest[2*i+1] = hexChars[digest[i] & 0xF];
+            }
+            hash = new String(hexDigest);
+            return hash;
+        }
+        catch (java.security.NoSuchAlgorithmException e)
+        {
+            return null;  // should never happen
+        }
     }
 }
