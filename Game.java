@@ -23,6 +23,8 @@ public class Game
     ArrayList<Instruction> p2code;
     int p1size;
     int p2size;
+    GameView gameView;
+    
     public Game(Player A, Player B, int coreSize, int maxTime, int debug)
     {
         p1 = A;
@@ -45,6 +47,9 @@ public class Game
         p1size = p1code.size();
         p2code =  p2.getCode();
         p2size = p2code.size();
+        if ((debug & 2) == 2){
+            gameView = new GameView(this);
+        }
     }
     
     public int runAll()
@@ -75,6 +80,10 @@ public class Game
         for(int i = 0; i < coreSize; i++)
         {
             core[i] = Instruction.DAT00;
+            if((debug & 2) == 2)
+            {
+                gameView.coreData[i] = 0;
+            }
         }
 
         int offset1 = 0;
@@ -82,6 +91,10 @@ public class Game
         {
             int loc = (offset1 + i) & coreSizeM1;
             core[loc] = p1code.get(i);
+            if((debug & 2) == 2)
+            {
+                gameView.coreData[i] = 1;
+            }
         }
 
         int offset2 = offset1 + p1size + deltaOffset;
@@ -89,6 +102,11 @@ public class Game
         {
             int loc = (offset2 + i) & coreSizeM1;
             core[loc] = p2code.get(i);
+            if((debug & 2) == 2)
+            {
+                gameView.coreData[i] = 2;
+            }
+
         }
              
         int poffset = offset1 & coreSizeM1, ploc = poffset;
@@ -97,9 +115,13 @@ public class Game
         int maxSteps = maxTime * 2;
         for(int step = 0; step != maxSteps; step++)
         {
-            if(debug != 0)
+            if((debug & 1) == 1)
             {
                 printCore(core, ploc, xloc, step);
+            }
+            if((debug & 2) == 2)
+            {
+                gameView.viewCore(core, ploc, xloc, step);
             }
             
             Instruction curr = core[ploc];
@@ -184,6 +206,11 @@ public class Game
                 throw new IllegalStateException("invalid opcode " + opcode + " (decoded from " + op + ") on line " + ploc);
             }
             
+            if((debug & 2) == 2 && opcode <= Instruction.OP_SUB)
+            {
+                gameView.coreData[line2] = (step & 1) + (opcode << 1) + 1;
+            }
+
             ploc++;
             ploc &= coreSizeM1;
            
