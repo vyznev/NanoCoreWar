@@ -7,17 +7,6 @@ import java.awt.*;
  * @version 3/18/15
  */
 public class GameView extends JComponent{
-
-    final static Color[] commandColors = new Color[]{
-            Color.black, //DAT
-            Color.blue,  //MOV
-            Color.blue,  //ADD
-            Color.blue,  //SUB
-            Color.blue,  //JMP
-            Color.blue,  //JMZ
-            Color.blue,  //CMP
-    };
-
     final static Color[] specialColors = new Color[]{
             new Color(0,0,0),
             new Color(190, 255, 152),
@@ -41,7 +30,6 @@ public class GameView extends JComponent{
     private int playerOneLocation;
     private int playerTwoLocation;
     private int time, turn;
-    private Instruction[] core;
 
     final static int width = 128;
     final static int height = 64;
@@ -72,10 +60,7 @@ public class GameView extends JComponent{
         for (int x = 0; x < squareWidth * width; x += squareWidth){
             for (int y = 0; y < squareWidth * height; y += squareWidth){
                 int index = (y / squareWidth) * width + (x / squareWidth);
-                Color color = commandColors[core[index].getOpcode()];
-                if (coreData[index] != 0){
-                    color = specialColors[coreData[index]];
-                }
+                Color color = specialColors[coreData[index]];
                 if (index == playerOneLocation){
                     color = playerOneColor;
                 }
@@ -93,11 +78,10 @@ public class GameView extends JComponent{
         this.turn = (step & 1);
         this.playerOneLocation = (turn == 0 ? ploc : xloc);
         this.playerTwoLocation = (turn == 0 ? xloc : ploc);
-        this.core = core;
 
         repaint();
         try {
-            Thread.sleep(5); // 2*100 steps per second
+            Thread.sleep(1); // 1000 steps per second
         } catch (InterruptedException e) { }
     }
 }
