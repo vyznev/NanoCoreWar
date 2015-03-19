@@ -93,7 +93,7 @@ public class Game
             core[loc] = p1code.get(i);
             if((debug & 2) == 2)
             {
-                gameView.coreData[i] = 1;
+                gameView.coreData[loc] = 1;
             }
         }
 
@@ -104,7 +104,7 @@ public class Game
             core[loc] = p2code.get(i);
             if((debug & 2) == 2)
             {
-                gameView.coreData[i] = 2;
+                gameView.coreData[loc] = 2;
             }
 
         }
