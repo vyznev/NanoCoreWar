@@ -71,7 +71,7 @@ public class Game
     {
         if(debug != 0)
         {
-            System.out.println("New game between " + p1.getName() + " and " + p2.getName() + " with offset " + deltaOffset + ":");
+            System.out.print("New game between " + p1.getName() + " and " + p2.getName() + " with offset " + deltaOffset + ":");
         }
 
         int coreSize = this.coreSize, coreSizeM1 = coreSize-1;
@@ -128,6 +128,10 @@ public class Game
             int op = curr.packedOp;
             if(op < Instruction.minValidOp)
             {
+                if(debug != 0)
+                {
+                    System.out.println((step & 1) == 0 ? p2.getName (): p1.getName());
+                }
                 return ((step & 1) == 0 ? 0 : 2);
             }
             
@@ -216,6 +220,10 @@ public class Game
            
             int tmpLoc = ploc; ploc = xloc; xloc = tmpLoc;            
             int tmpOffset = poffset; poffset = xoffset; xoffset = tmpOffset;            
+        }
+        if (debug > 0) 
+        {
+            System.out.println("Tie.");
         }
         return 1;
     }
